@@ -110,3 +110,46 @@ qa_chain = RetrievalQA.from_chain_type(
 # 5. Query
 result = qa_chain.invoke("What is the main idea?")
 print(result["result"])
+
+## 🚀 Next Steps
+
+1. **Read the Full Guide** → See `GUIDE.md` for detailed implementation and best practices.
+2. **Build Your Project** → Use the code above as a starting point for your own RAG application.
+3. **Deploy to Hugging Face Spaces** — Share your project with the world.
+
+---
+
+## ⚠️ Important Disclaimer
+
+> This guide is for informational purposes. All models, APIs, and libraries are subject to change. Always consult official documentation for the most current information.
+
+---
+
+## 🤝 Contributing & Feedback
+
+Contributions are welcome! If you find a broken link, outdated information, or know of a verified resource that should be added:
+
+1. Fork this repository.
+2. Create a new branch for your update.
+3. Submit a Pull Request with a clear description of the change.
+
+Alternatively, you can open an **Issue** to report errors or suggest improvements.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details. You are free to use, modify, and distribute this content with proper attribution.
+
+---
+
+## 📬 Stay Updated
+
+- **Star** ⭐ this repository to receive notifications for future updates.
+- Watch the repository for release notes and change logs.
+
+---
+
+*Maintained with ❤️ for the global AI community.*
+
+*Last Major Update: September 2, 2026*
