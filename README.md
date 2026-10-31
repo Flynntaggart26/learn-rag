@@ -1,82 +1,30 @@
-# 📚 Retrieval-Augmented Generation (RAG) — Complete Guide
+# Retrieval-Augmented Generation (RAG): Learning Guide
 
-> A comprehensive, verified guide to understanding and building RAG systems — from fundamental concepts to implementation best practices.
+A documentation-first introduction to Retrieval-Augmented Generation (RAG). This repository explains the main stages of a RAG workflow and collects learning resources for exploring the topic further.
 
-[![Last Updated](https://img.shields.io/badge/Last%20Updated-September%202026-blue)](https://github.com/your-username/rag-guide)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active-brightgreen)]()
+> This repository is a guide, not a packaged or production-ready RAG application. The code below is an illustrative example and has not been verified as a runnable project in this repository.
 
----
+## What you’ll find
 
-## 📌 Overview
+- **[The guide](GUİDE.md)** — concepts, workflow, and implementation notes.
+- **[Sources](SOURCE.md)** — references and further reading.
+- **[Changelog](CHANGELOG.md)** — recorded documentation updates.
 
-**Retrieval-Augmented Generation (RAG)** is one of the most important advancements in modern AI. It allows Large Language Models (LLMs) to access and reason over external knowledge — dramatically reducing hallucinations and enabling domain‑specific question‑answering, document analysis, and enterprise search.
+## RAG in brief
 
-This guide consolidates **verified, practical, and up‑to‑date resources** for understanding and implementing RAG systems. Whether you are a student, developer, or researcher, this will give you a solid foundation.
+A typical RAG workflow retrieves relevant material and provides it to a language model as context when answering a question:
 
----
+1. **Ingest:** Load documents and split them into passages.
+2. **Index:** Convert passages into embeddings and store them in a searchable index.
+3. **Retrieve:** Find passages relevant to a user's question.
+4. **Generate:** Give the retrieved passages and question to a language model to produce an answer.
+5. **Evaluate:** Check retrieval quality, answer accuracy, and whether cited passages support the answer.
 
-## 📚 What's Inside
+Retrieval can help ground an answer in selected material, but it does not guarantee correctness or prevent hallucinations. The quality of results depends on the data, retrieval method, prompt, model, and evaluation process.
 
-| Category | Description |
-|----------|-------------|
-| **Core Concepts** | What RAG is, why it matters, and how it works |
-| **Components** | Embeddings, Vector Databases, Retrieval, Generation |
-| **Implementation Guide** | Step‑by‑step with LangChain, FAISS, and Streamlit |
-| **Best Practices** | Chunking, hybrid search, evaluation, and production tips |
-| **Verified Resources** | Official docs, papers, tutorials, and open‑source projects |
+## Illustrative Python example
 
----
-
-## 🔗 Quick Links to Key Resources
-
-| Resource | Purpose |
-|----------|---------|
-| [LangChain RAG Tutorial](https://python.langchain.com/docs/tutorials/rag/) | Official tutorial — starts here |
-| [Hugging Face RAG Model](https://huggingface.co/docs/transformers/model_doc/rag) | Original RAG model documentation |
-| [Pinecone RAG Guide](https://www.pinecone.io/learn/rag/) | Comprehensive RAG introduction |
-| [Weaviate RAG Tutorial](https://weaviate.io/blog/rag-tutorial) | Practical implementation guide |
-| [FAISS Documentation](https://faiss.ai/) | Facebook AI Similarity Search |
-| [RAG 101 by Datastax](https://www.datastax.com/rag-101) | Beginner‑friendly overview |
-| [llamaindex RAG Guide](https://docs.llamaindex.ai/en/stable/understanding/rag.html) | Alternative RAG framework |
-
-> 📖 For the complete, categorized list of all sources with direct URLs, see the **[SOURCES.md](SOURCES.md)** file.
-
----
-
-## 🧠 Why RAG Matters
-
-| Problem | RAG Solution |
-|---------|--------------|
-| **Hallucinations** | LLM generates factually incorrect information |
-| **Stale Knowledge** | LLM is frozen in time |
-| **No Access to Private Data** | Can't use company documents |
-| **Lack of Citations** | Can't verify sources |
-
-RAG solves these by retrieving relevant documents and injecting them into the prompt, so the LLM answers only based on given context.
-
----
-
-## 🏗️ RAG Pipeline Overview
-
-[User Query]
-↓
-[Retriever] ← (Vector DB)
-↓
-[Context Documents]
-↓
-[LLM / Generator] ← (Prompt + Context)
-↓
-[Response with Citations]
-
-
-**Step 1: Indexing** — Documents are chunked, embedded, and stored in a vector database.  
-**Step 2: Retrieval** — User query is embedded and matched against stored vectors.  
-**Step 3: Generation** — Retrieved chunks are injected into the prompt and passed to LLM.
-
----
-
-## ⚡ Quick Implementation (TL;DR)
+The following sketch shows the shape of a basic RAG pipeline. It is a starting point for learning, not a tested script included with this repository. Library APIs may change; consult their official documentation before running or adapting it.
 
 ```python
 from langchain_community.document_loaders import PyPDFLoader
@@ -86,70 +34,46 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
 from langchain.chains import RetrievalQA
 
-# 1. Load and chunk documents
-loader = PyPDFLoader("my_document.pdf")
-docs = loader.load()
-splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-chunks = splitter.split_documents(docs)
+# Load and split a PDF into smaller passages.
+documents = PyPDFLoader("my_document.pdf").load()
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1000,
+    chunk_overlap=200,
+)
+chunks = splitter.split_documents(documents)
 
-# 2. Create vector database
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+# Embed passages and build an in-memory FAISS index.
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
 vectorstore = FAISS.from_documents(chunks, embeddings)
-
-# 3. Create retriever and LLM
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
-llm = ChatGroq(model="llama3-70b-8192", api_key="your_api_key")
 
-# 4. Build RAG chain
-qa_chain = RetrievalQA.from_chain_type(
+# Configure a chat model with your provider credentials.
+llm = ChatGroq(
+    model="llama-3.1-8b-instant",
+    api_key="YOUR_GROQ_API_KEY",
+)
+qa = RetrievalQA.from_chain_type(
     llm=llm,
     retriever=retriever,
-    return_source_documents=True
+    return_source_documents=True,
 )
 
-# 5. Query
-result = qa_chain.invoke("What is the main idea?")
+result = qa.invoke({"query": "What is the main idea?"})
 print(result["result"])
+```
 
-## 🚀 Next Steps
+This example requires compatible versions of LangChain integrations, a working Groq API key, and a local PDF at the specified path. No dependency file, sample PDF, or runnable application is currently provided in this repository.
 
-1. **Read the Full Guide** → See `GUIDE.md` for detailed implementation and best practices.
-2. **Build Your Project** → Use the code above as a starting point for your own RAG application.
-3. **Deploy to Hugging Face Spaces** — Share your project with the world.
+## Further reading
 
----
+Start with the [guide](GUİDE.md), then use the [source list](SOURCE.md) to explore primary documentation, papers, and tutorials. Verify current APIs and model availability against the projects' official documentation.
 
-## ⚠️ Important Disclaimer
+## Contributing
 
-> This guide is for informational purposes. All models, APIs, and libraries are subject to change. Always consult official documentation for the most current information.
+Corrections to the guide and suggestions for useful, well-sourced references are welcome. Please include the relevant source and explain what should be updated when opening an issue or pull request.
 
----
+## License
 
-## 🤝 Contributing & Feedback
-
-Contributions are welcome! If you find a broken link, outdated information, or know of a verified resource that should be added:
-
-1. Fork this repository.
-2. Create a new branch for your update.
-3. Submit a Pull Request with a clear description of the change.
-
-Alternatively, you can open an **Issue** to report errors or suggest improvements.
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details. You are free to use, modify, and distribute this content with proper attribution.
-
----
-
-## 📬 Stay Updated
-
-- **Star** ⭐ this repository to receive notifications for future updates.
-- Watch the repository for release notes and change logs.
-
----
-
-*Maintained with ❤️ for the global AI community.*
-
-*Last Major Update: September 2, 2026*
+See [`LICENSE (MIT License).md`](LICENSE%20%28MIT%20License%29.md) for the license file currently included in this repository.
